@@ -1,6 +1,7 @@
 import data.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.junit.After;
 import org.junit.Test;
 import user.LoginUserModel;
 import user.UserModel;
@@ -16,6 +17,7 @@ import static steps.CreateOrderSteps.createOrderWithoutAuth;
 import static steps.IngredientsSteps.getIngredients;
 import static steps.LoginUserSteps.authorizationUser;
 import static steps.UserSteps.createUniqueUser;
+import static steps.UserSteps.deleteUser_Create;
 
 public class CreateOrderTest extends BaseApiTest {
 
@@ -210,5 +212,13 @@ public class CreateOrderTest extends BaseApiTest {
                 .then()
                 .log().all()
                 .statusCode(500);
+    }
+
+    @After
+    public void tearDown() {
+        if (UserData.currentAccessToken != null) {
+            System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
+            deleteUser_Create(userUnique);
+        }
     }
 }
