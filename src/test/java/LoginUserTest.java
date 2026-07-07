@@ -71,4 +71,12 @@ public class LoginUserTest extends BaseApiTest {
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"));
     }
+
+    @After
+    public void tearDown() {
+        if (UserData.currentAccessToken != null) {
+            System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
+            LoginUserSteps.deleteUser_Auth(loginUser);
+        }
+    }
 }
