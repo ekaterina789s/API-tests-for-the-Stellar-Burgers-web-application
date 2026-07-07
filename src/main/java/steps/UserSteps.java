@@ -19,4 +19,18 @@ public class UserSteps {
                 .then()
                 .extract().response();
     }
+
+    @Step("Создание уже зарегистрированного пользователя, ручка /api/auth/register")
+    public static Response createRegisteredUser(UserModel user){
+        return given()
+                .log().all()
+                .header("Content-type", "application/json")
+                .header("Authorization", "Bearer " + currentAccessToken)
+                .body(user)
+                .when()
+                .post(CREATE_USER_PATH)
+                .then()
+                .extract().response();
+
+    }
 }
