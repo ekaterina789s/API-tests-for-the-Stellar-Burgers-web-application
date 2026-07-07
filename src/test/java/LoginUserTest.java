@@ -54,4 +54,21 @@ public class LoginUserTest extends BaseApiTest {
                 .body("user.name", equalTo(name));
 
     }
+
+    @Test
+    @DisplayName("Вход с неверным логином и паролем")
+    @Description("Несозданный пользователь не может авторизоваться, должна быть ошибка от сервера")
+    public void testAuthorizationInvalidNameAndPassword() {
+        String email = "1@yandex.ru";
+        String password = "#";
+
+        loginUser = new LoginUserModel(email, password);
+
+        var authResponse = authorizationUser(loginUser);
+        authResponse.then()
+                .log().all()
+                .statusCode(401)
+                .body("success", equalTo(false))
+                .body("message", equalTo("email or password are incorrect"));
+    }
 }
