@@ -42,4 +42,23 @@ public class CreateUserTest extends BaseApiTest {
         String accessToken = response.jsonPath().getString("accessToken");
         UserData.currentAccessToken = accessToken;
     }
+
+    @Test
+    @DisplayName("Создание уже зарегистрированного пользователя")
+    @Description("Пользователь не будет создан, должна вернуться ошибка от сервера")
+    public void testCreateRegisteredUser() {
+
+        String email = faker.internet().emailAddress();
+        String name = faker.name().fullName();
+
+        userUnique = new UserModel(email, PASSWORD, name);
+
+        //шаг и проверка ответа от сервера
+        createRegisteredUser(userUnique)
+                .then()
+                .log().all()
+                .statusCode(403)
+                .body("success", equalTo(false))
+                .body("message", equalTo("User already exists"));
+    }
 }
