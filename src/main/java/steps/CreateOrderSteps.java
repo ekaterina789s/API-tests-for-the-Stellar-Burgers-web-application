@@ -27,4 +27,20 @@ public class CreateOrderSteps {
                 .then()
                 .extract().response();
     }
+
+    @Step("Создание заказа без авторизации")
+    public static Response createOrderWithoutAuth(String[] idsArray) {
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("ingredients", idsArray);
+
+        return given()
+                .log().all()
+                .header("Content-type", "application/json")
+                .body(requestBody)
+                .when()
+                .post(CREATE_ORDER_PATH)
+                .then()
+                .extract().response();
+    }
 }
