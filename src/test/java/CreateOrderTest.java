@@ -5,6 +5,9 @@ import org.junit.Test;
 import user.LoginUserModel;
 import user.UserModel;
 import java.util.List;
+
+import static data.OrderData.INVALID_HASH_FIRST_ING;
+import static data.OrderData.INVALID_HASH_SECOND_ING;
 import static data.UserData.PASSWORD;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
@@ -170,5 +173,42 @@ public class CreateOrderTest extends BaseApiTest {
                 .then()
                 .log().all()
                 .statusCode(200);
+    }
+
+    @Test
+    @DisplayName("Создание заказа с неверным хэшем ингредиентов и с авторизацией")
+    @Description("Сервер должен вернуть ошибку")
+    public void testCreateOrder_withInvalidIng_WithAuthorization(){
+        //создаем пользователя
+        String email = faker.internet().emailAddress();
+        String name = faker.name().fullName();
+
+        userUnique = new UserModel(email, PASSWORD, name);
+        var responseCreateUser = createUniqueUser(userUnique);
+        responseCreateUser.then()
+                .statusCode(200)
+                .body("success", equalTo(true));
+
+        //авторизуем пользователя
+        LoginUserModel loginUser_forCreateOrder = new LoginUserModel(userUnique.getEmail(), PASSWORD);
+
+        var responseLoginUser = authorizationUser(loginUser_forCreateOrder);
+        responseLoginUser.then()
+                .statusCode(200)
+                .body("success", equalTo(true))
+                .body("accessToken", startsWith("Bearer "));
+
+
+        String accessToken = responseLoginUser.jsonPath().getString("accessToken"); //извлекаем значение токена
+        UserData.currentAccessToken = accessToken;
+
+        //помещаем в массив неверный хэш ингредиентов
+        String[] idsArray = {INVALID_HASH_FIRST_ING, INVALID_HASH_SECOND_ING};
+
+        //создаем заказ
+        createOrderWithAuth(idsArray)
+                .then()
+                .log().all()
+                .statusCode(500);
     }
 }
