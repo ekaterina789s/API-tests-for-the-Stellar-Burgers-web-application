@@ -33,4 +33,16 @@ public class UserSteps {
                 .extract().response();
 
     }
+
+    @Step("Создание пользователя без одного из обязательных полей, ручка /api/auth/register")
+    public static Response createUserWithoutOneField(UserModel user){
+        return given()
+                .log().all()
+                .header("Content-type", "application/json")
+                .body(user)
+                .when()
+                .post(CREATE_USER_PATH)
+                .then()
+                .extract().response();
+    }
 }
