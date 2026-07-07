@@ -9,6 +9,7 @@ import static data.UserData.PASSWORD;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static steps.CreateOrderSteps.createOrderWithAuth;
+import static steps.CreateOrderSteps.createOrderWithoutAuth;
 import static steps.IngredientsSteps.getIngredients;
 import static steps.LoginUserSteps.authorizationUser;
 import static steps.UserSteps.createUniqueUser;
@@ -127,5 +128,47 @@ public class CreateOrderTest extends BaseApiTest {
                 .statusCode(400)
                 .body("success", equalTo(false))
                 .body("message", equalTo("Ingredient ids must be provided"));
+    }
+
+    @Test
+    @DisplayName("Создание заказа с ингредиентами и без авторизацией")
+    @Description("Сервер должен вернуть ошибку")
+    public void testCreateOrder_withIng_WithoutAuthorization(){
+        //создаем пользователя
+        String email = faker.internet().emailAddress();
+        String password = "12345";
+        String name = faker.name().fullName();
+
+        userUnique = new UserModel(email, password, name);
+
+        var response = createUniqueUser(userUnique);
+
+        response.then()
+                .log().all()
+                .statusCode(200)
+                .body("success", equalTo(true));
+
+        //получаем хэш ингредиентов
+        var responseIngredients = getIngredients();
+
+        responseIngredients.then()
+                .log().all()
+                .statusCode(200)
+                .body("success", equalTo(true))
+                .body("data", everyItem(hasKey("_id")));
+
+        //помещаем хэши в список
+        List<String> allIds = responseIngredients.jsonPath().getList("data._id");
+
+        String hash_firstIngredient = allIds.get(0);
+        String hash_secondIngredient = allIds.get(1);
+
+        //помещаем в массив переменные с хэшем
+        String[] idsArray = {hash_firstIngredient, hash_secondIngredient};
+
+        createOrderWithoutAuth(idsArray)
+                .then()
+                .log().all()
+                .statusCode(200);
     }
 }
