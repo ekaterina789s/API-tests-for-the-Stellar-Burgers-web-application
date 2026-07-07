@@ -87,4 +87,45 @@ public class CreateOrderTest extends BaseApiTest {
                 .body("order.number", notNullValue())
                 .body("success", equalTo(true));
     }
+
+    @Test
+    @DisplayName("Создание заказа без ингредиентов и с авторизацией")
+    @Description("Сервер должен вернуть ошибку")
+    public void testCreateOrder_withoutIng_WithAuthorization() {
+        //создаем пользователя
+        String email = faker.internet().emailAddress();
+        String name = faker.name().fullName();
+
+        userUnique = new UserModel(email, PASSWORD, name);
+        var responseCreateUser = createUniqueUser(userUnique);
+        responseCreateUser.then()
+                .statusCode(200)
+                .body("success", equalTo(true));
+
+        //авторизуем пользователя
+        LoginUserModel loginUser_forCreateOrder = new LoginUserModel(userUnique.getEmail(), PASSWORD);
+
+        var responseLoginUser = authorizationUser(loginUser_forCreateOrder);
+        responseLoginUser.then()
+                .statusCode(200)
+                .body("success", equalTo(true))
+                .body("accessToken", startsWith("Bearer "));
+
+
+        String accessToken = responseLoginUser.jsonPath().getString("accessToken"); //извлекаем значение токена
+        UserData.currentAccessToken = accessToken;
+
+        //создаем пустой массив
+        String[] idsArray = new String[0];
+        System.out.println("Отправляем заказ с пустым списком ингредиентов (size = " + idsArray.length + ")");
+
+        //создаем заказ
+        var responseCreateOrder = createOrderWithAuth(idsArray);
+
+        responseCreateOrder.then()
+                .log().all()
+                .statusCode(400)
+                .body("success", equalTo(false))
+                .body("message", equalTo("Ingredient ids must be provided"));
+    }
 }
