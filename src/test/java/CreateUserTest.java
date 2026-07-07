@@ -1,6 +1,7 @@
 import data.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.junit.After;
 import org.junit.Test;
 import user.UserModel;
 
@@ -76,5 +77,13 @@ public class CreateUserTest extends BaseApiTest {
                 .statusCode(403)
                 .body("success", equalTo(false))
                 .body("message", equalTo("Email, password and name are required fields"));
+    }
+
+    @After
+    public void tearDown() {
+        if (UserData.currentAccessToken != null) {
+            System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
+            deleteUser_Create(userUnique);
+        }
     }
 }
