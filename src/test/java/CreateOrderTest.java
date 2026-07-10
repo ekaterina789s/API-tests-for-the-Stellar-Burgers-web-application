@@ -26,7 +26,7 @@ public class CreateOrderTest extends BaseApiTest {
     @Test
     @DisplayName("Создание заказа с ингредиентами и с авторизацией")
     @Description("Сервер должен успешно обработать запрос")
-    public void testCreateOrder_withIng_withAuthorization() {
+    public void testCreateOrderWithIngredientsAndAuthorization() {
         //сначала нужно создать пользователя
         String email = faker.internet().emailAddress();
         String name = faker.name().fullName();
@@ -97,7 +97,7 @@ public class CreateOrderTest extends BaseApiTest {
     @Test
     @DisplayName("Создание заказа без ингредиентов и с авторизацией")
     @Description("Сервер должен вернуть ошибку")
-    public void testCreateOrder_withoutIng_WithAuthorization() {
+    public void testCreateOrderWithoutIngredientsAndWithAuthorization() {
         //создаем пользователя
         String email = faker.internet().emailAddress();
         String name = faker.name().fullName();
@@ -138,7 +138,7 @@ public class CreateOrderTest extends BaseApiTest {
     @Test
     @DisplayName("Создание заказа с ингредиентами и без авторизацией")
     @Description("Сервер должен вернуть ошибку")
-    public void testCreateOrder_withIng_WithoutAuthorization(){
+    public void testCreateOrderWithIngredientsAndWithoutAuthorization(){
         //создаем пользователя
         String email = faker.internet().emailAddress();
         String password = "12345";
@@ -180,7 +180,7 @@ public class CreateOrderTest extends BaseApiTest {
     @Test
     @DisplayName("Создание заказа с неверным хэшем ингредиентов и с авторизацией")
     @Description("Сервер должен вернуть ошибку")
-    public void testCreateOrder_withInvalidIng_WithAuthorization(){
+    public void testCreateOrderWithInvalidIngredientsAndWithAuthorization(){
         //создаем пользователя
         String email = faker.internet().emailAddress();
         String name = faker.name().fullName();
