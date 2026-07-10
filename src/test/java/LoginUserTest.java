@@ -76,7 +76,7 @@ public class LoginUserTest extends BaseApiTest {
     public void tearDown() {
         if (UserData.currentAccessToken != null) {
             System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            LoginUserSteps.deleteUser_Auth(loginUser);
+            LoginUserSteps.deleteUserAuth(loginUser);
         }
     }
 }

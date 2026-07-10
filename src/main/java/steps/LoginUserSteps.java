@@ -21,7 +21,7 @@ public class LoginUserSteps {
     }
 
     @Step("Удаление пользователя по accessToken, который приходит при авторизации пользователя, ручка /api/auth/user")
-    public static Response deleteUser_Auth(LoginUserModel loginUser){
+    public static Response deleteUserAuth(LoginUserModel loginUser){
         return given()
                 .when()
                 .header("Authorization", "Bearer " + currentAccessToken)

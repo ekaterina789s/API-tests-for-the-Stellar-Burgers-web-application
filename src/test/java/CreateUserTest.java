@@ -83,7 +83,7 @@ public class CreateUserTest extends BaseApiTest {
     public void tearDown() {
         if (UserData.currentAccessToken != null) {
             System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            deleteUser_Create(userUnique);
+            deleteUserCreate(userUnique);
         }
     }
 }

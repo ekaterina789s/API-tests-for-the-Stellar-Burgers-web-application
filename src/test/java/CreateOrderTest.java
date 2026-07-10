@@ -17,7 +17,7 @@ import static steps.CreateOrderSteps.createOrderWithoutAuth;
 import static steps.IngredientsSteps.getIngredients;
 import static steps.LoginUserSteps.authorizationUser;
 import static steps.UserSteps.createUniqueUser;
-import static steps.UserSteps.deleteUser_Create;
+import static steps.UserSteps.deleteUserCreate;
 
 public class CreateOrderTest extends BaseApiTest {
 
@@ -218,7 +218,7 @@ public class CreateOrderTest extends BaseApiTest {
     public void tearDown() {
         if (UserData.currentAccessToken != null) {
             System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            deleteUser_Create(userUnique);
+            deleteUserCreate(userUnique);
         }
     }
 }
