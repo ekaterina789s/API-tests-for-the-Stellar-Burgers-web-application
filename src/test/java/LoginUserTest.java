@@ -1,37 +1,49 @@
 import data.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import steps.LoginUserSteps;
 import user.LoginUserModel;
 import user.UserModel;
 
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.*;
 import static steps.LoginUserSteps.authorizationUser;
 import static steps.UserSteps.createUniqueUser;
+import static steps.UserSteps.deleteUser;
 
 public class LoginUserTest extends BaseApiTest {
 
     private LoginUserModel loginUser;
+    private String email;
+    private String password;
+    private String name;
+    UserModel userToCreate;
+    Response response;
+
+    @Before
+    public void init(){
+        //прямо здесь создаем нового пользователя
+        email = faker.internet().emailAddress();
+        password = "12345";
+        name = faker.name().fullName();
+        userToCreate = new UserModel(email, password, name);
+    }
 
     @Test
     @DisplayName("Вход под существующим пользователем")
     @Description("Нужно передать email и password, под которыми регистрировался пользователь")
     public void testAuthorizationExistingUser() {
-        //прямо здесь создаем нового пользователя
-        String email = faker.internet().emailAddress();
-        String password = "12345";
-        String name = faker.name().fullName();
 
-        UserModel userToCreate = new UserModel(email, password, name);
         //шаг для создания пользователя
-        var response = createUniqueUser(userToCreate);
-
+        response = createUniqueUser(userToCreate);
         //проверка ответа от сервера на создание нового пользователя
         response.then()
                 .log().all()
-                .statusCode(200)
+                .statusCode(SC_OK)
                 .body("success", equalTo(true));
 
         //делаем объект пользователя для авторизации
@@ -40,43 +52,46 @@ public class LoginUserTest extends BaseApiTest {
         //шаг запроса на авторизацию
         var authResponse = authorizationUser(loginUser);
 
-        //извлекаем значение токена
-        String accessToken = authResponse.jsonPath().getString("accessToken");
-        UserData.currentAccessToken = accessToken;
-
         authResponse.then()
                 .log().all()
-                .statusCode(200)
+                .statusCode(SC_OK)
                 .body("success", equalTo(true))
                 .body("accessToken", startsWith("Bearer "))
                 .body("refreshToken", notNullValue())
                 .body("user.email", equalTo(email))
                 .body("user.name", equalTo(name));
-
     }
 
     @Test
-    @DisplayName("Вход с неверным логином и паролем")
-    @Description("Несозданный пользователь не может авторизоваться, должна быть ошибка от сервера")
-    public void testAuthorizationInvalidNameAndPassword() {
-        String email = "1@yandex.ru";
-        String password = "#";
+    @DisplayName("Вход с неверным паролем")
+    @Description("Должна быть ошибка от сервера")
+    public void testAuthorizationInvalidPassword() {
 
-        loginUser = new LoginUserModel(email, password);
+        response = createUniqueUser(userToCreate);
+
+        response.then()
+                .log().all()
+                .statusCode(SC_OK)
+                .body("success", equalTo(true));
+
+        String passwordInvalid = this.password + "#";
+        loginUser = new LoginUserModel(email, passwordInvalid);
 
         var authResponse = authorizationUser(loginUser);
         authResponse.then()
                 .log().all()
-                .statusCode(401)
+                .statusCode(SC_UNAUTHORIZED)
                 .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"));
     }
 
     @After
     public void tearDown() {
-        if (UserData.currentAccessToken != null) {
+        if (response != null) {
+            String accessToken = response.jsonPath().getString("accessToken");
+            UserData.currentAccessToken = accessToken;
             System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            LoginUserSteps.deleteUserAuth(loginUser);
+            deleteUser(userToCreate);
         }
     }
 }
