@@ -97,6 +97,22 @@ public class CreateUserTest extends BaseApiTest {
                 .body("message", equalTo("Email, password and name are required fields"));
     }
 
+    @Test
+    @DisplayName("Создание пользователя без передачи поля name")
+    @Description("Пользователь не будет создан, должна вернуться ошибка от сервера")
+    public void testCreateUserWithoutName() {
+        String email = faker.internet().emailAddress();
+        String name = null;
+
+        userUnique = new UserModel(email, PASSWORD, name);
+        createUserWithoutOneField(userUnique)
+                .then()
+                .log().all()
+                .statusCode(SC_FORBIDDEN)
+                .body("success", equalTo(false))
+                .body("message", equalTo("Email, password and name are required fields"));
+    }
+
     @After
     public void tearDown() {
         if (response != null) {
