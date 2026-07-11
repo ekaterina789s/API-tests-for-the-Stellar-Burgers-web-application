@@ -1,15 +1,19 @@
 import data.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Test;
 import user.UserModel;
 
 import static data.UserData.PASSWORD;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.*;
 import static steps.UserSteps.*;
 
 public class CreateUserTest extends BaseApiTest {
+    private Response response;
 
     private UserModel userUnique;
 
@@ -24,12 +28,12 @@ public class CreateUserTest extends BaseApiTest {
         //создаем объект курьера и передаем в аргументах 3 обязательных поля
         userUnique = new UserModel(email, PASSWORD, name);
         //в переменную кладем шаг теста
-        var response = createUniqueUser(userUnique);
+        response = createUniqueUser(userUnique);
         //логирование (для отладки в Allure/консоли)
         response.then().log().all();
         //тут начинается детальная проверка тела ответа
         response.then()
-                .statusCode(200)
+                .statusCode(SC_OK)
                 //проверка верхнего уровня
                 .body("success", equalTo(true))
                 //проверка вложенного объекта "user"
@@ -39,9 +43,6 @@ public class CreateUserTest extends BaseApiTest {
                 .body("accessToken", notNullValue())
                 .body("accessToken", startsWith("Bearer ")) //убеждаемся, что это Bearer токен
                 .body("refreshToken", notNullValue());
-        //извлекаем значение токена
-        String accessToken = response.jsonPath().getString("accessToken");
-        UserData.currentAccessToken = accessToken;
     }
 
     @Test
@@ -58,15 +59,15 @@ public class CreateUserTest extends BaseApiTest {
         createRegisteredUser(userUnique)
                 .then()
                 .log().all()
-                .statusCode(403)
+                .statusCode(SC_FORBIDDEN)
                 .body("success", equalTo(false))
                 .body("message", equalTo("User already exists"));
     }
 
     @Test
-    @DisplayName("Создание пользователя без одного из обязательных полей")
+    @DisplayName("Создание пользователя без передачи поля email")
     @Description("Пользователь не будет создан, должна вернуться ошибка от сервера")
-    public void testCreateUserWithoutOneField() {
+    public void testCreateUserWithoutEmail() {
 
         String name = faker.name().fullName();
 
@@ -74,16 +75,18 @@ public class CreateUserTest extends BaseApiTest {
         createUserWithoutOneField(userUnique)
                 .then()
                 .log().all()
-                .statusCode(403)
+                .statusCode(SC_FORBIDDEN)
                 .body("success", equalTo(false))
                 .body("message", equalTo("Email, password and name are required fields"));
     }
 
     @After
     public void tearDown() {
-        if (UserData.currentAccessToken != null) {
+        if (response != null) {
+            String accessToken = response.jsonPath().getString("accessToken");
+            UserData.currentAccessToken = accessToken;
             System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            deleteUserCreate(userUnique);
+            deleteUser(userUnique);
         }
     }
 }
