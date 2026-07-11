@@ -85,6 +85,29 @@ public class LoginUserTest extends BaseApiTest {
                 .body("message", equalTo("email or password are incorrect"));
     }
 
+    @Test
+    @DisplayName("Вход с неверным email")
+    @Description("Должна быть ошибка от сервера")
+    public void testAuthorizationInvalidEmail() {
+
+        response = createUniqueUser(userToCreate);
+
+        response.then()
+                .log().all()
+                .statusCode(SC_OK)
+                .body("success", equalTo(true));
+
+        String emailInvalid = this.email + "#";
+        loginUser = new LoginUserModel(emailInvalid, password);
+
+        var authResponse = authorizationUser(loginUser);
+        authResponse.then()
+                .log().all()
+                .statusCode(SC_UNAUTHORIZED)
+                .body("success", equalTo(false))
+                .body("message", equalTo("email or password are incorrect"));
+    }
+
     @After
     public void tearDown() {
         if (response != null) {
