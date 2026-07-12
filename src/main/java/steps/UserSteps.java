@@ -21,11 +21,11 @@ public class UserSteps {
     }
 
     @Step("Создание уже зарегистрированного пользователя, ручка /api/auth/register")
-    public static Response createRegisteredUser(UserModel user){
+    public static Response createRegisteredUser(String token, UserModel user){
         return given()
                 .log().all()
                 .header("Content-type", "application/json")
-                .header("Authorization", "Bearer " + currentAccessToken)
+                .header("Authorization", token)
                 .body(user)
                 .when()
                 .post(CREATE_USER_PATH)
@@ -47,10 +47,10 @@ public class UserSteps {
     }
 
     @Step("Удаление пользователя по accessToken, который приходит при создании пользователя, ручка /api/auth/user")
-    public static Response deleteUser(UserModel user){
+    public static Response deleteUser(String token, UserModel user){
         return given()
-                .when()
-                .header("Authorization", "Bearer " + currentAccessToken)
+                .log().all()
+                .header("Authorization", token)
                 .delete(DELETE_USER_PATH);
     }
 }
