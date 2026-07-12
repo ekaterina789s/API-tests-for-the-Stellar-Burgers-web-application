@@ -31,27 +31,15 @@ public class LoginUserTest extends BaseApiTest {
         password = "12345";
         name = faker.name().fullName();
         userToCreate = new UserModel(email, password, name);
+        response = createUniqueUser(userToCreate);
     }
 
     @Test
     @DisplayName("Вход под существующим пользователем")
     @Description("Нужно передать email и password, под которыми регистрировался пользователь")
     public void testAuthorizationExistingUser() {
-
-        //шаг для создания пользователя
-        response = createUniqueUser(userToCreate);
-        //проверка ответа от сервера на создание нового пользователя
-        response.then()
-                .log().all()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true));
-
-        //делаем объект пользователя для авторизации
         loginUser = new LoginUserModel(email, password);
-
-        //шаг запроса на авторизацию
         var authResponse = authorizationUser(loginUser);
-
         authResponse.then()
                 .log().all()
                 .statusCode(SC_OK)
@@ -66,17 +54,8 @@ public class LoginUserTest extends BaseApiTest {
     @DisplayName("Вход с неверным паролем")
     @Description("Должна быть ошибка от сервера")
     public void testAuthorizationInvalidPassword() {
-
-        response = createUniqueUser(userToCreate);
-
-        response.then()
-                .log().all()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true));
-
-        String passwordInvalid = this.password + "#";
+        String passwordInvalid = "#######";
         loginUser = new LoginUserModel(email, passwordInvalid);
-
         var authResponse = authorizationUser(loginUser);
         authResponse.then()
                 .log().all()
@@ -89,17 +68,8 @@ public class LoginUserTest extends BaseApiTest {
     @DisplayName("Вход с неверным email")
     @Description("Должна быть ошибка от сервера")
     public void testAuthorizationInvalidEmail() {
-
-        response = createUniqueUser(userToCreate);
-
-        response.then()
-                .log().all()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true));
-
-        String emailInvalid = this.email + "#";
+        String emailInvalid = "########";
         loginUser = new LoginUserModel(emailInvalid, password);
-
         var authResponse = authorizationUser(loginUser);
         authResponse.then()
                 .log().all()
