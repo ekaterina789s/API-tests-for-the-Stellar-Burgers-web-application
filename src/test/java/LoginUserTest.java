@@ -1,4 +1,3 @@
-import data.UserData;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
@@ -7,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import user.LoginUserModel;
 import user.UserModel;
-
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.*;
@@ -82,9 +80,8 @@ public class LoginUserTest extends BaseApiTest {
     public void tearDown() {
         if (response != null) {
             String accessToken = response.jsonPath().getString("accessToken");
-            UserData.currentAccessToken = accessToken;
-            System.out.println("Удаляем пользователя с accessToken: " + UserData.currentAccessToken);
-            deleteUser(userToCreate);
+            System.out.println("Удаляем пользователя с accessToken: " + accessToken);
+            deleteUser(accessToken, userToCreate);
         }
     }
 }
